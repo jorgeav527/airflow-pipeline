@@ -1,0 +1,8 @@
+numpy
+pandas
+matplotlib
+python-dotenv
+plotly
+streamlit
+scikit-learn
+uvicorn
