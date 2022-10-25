@@ -33,7 +33,7 @@ def paises() -> str:
     
     return id_code_string
 
-def carga_incremental(indicator_code: int):
+def carga_incremental_unpd(indicator_code: int):
     base_url_UNPD = "https://population.un.org/dataportalapi/api/v1"
     country = paises()  # set the country code
     start_year = 1990  # set the start year
@@ -58,7 +58,7 @@ def carga_incremental(indicator_code: int):
 
     return df_UNPD
 
-def carga():
+def carga_unpd():
 
     consultar_por ={
         24: "mort",
@@ -68,8 +68,8 @@ def carga():
     }
 
     for indicador in consultar_por:
-        datos = carga_incremental(indicador)
+        datos = carga_incremental_unpd(indicador)
         datos.to_parquet(f'df_UNPD_{consultar_por[indicador]}_{indicador}.parquet')
         print('Guardado')
 
-carga()
+carga_unpd()
