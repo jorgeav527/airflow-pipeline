@@ -68,7 +68,8 @@ def carga_twb():
         'NY.GDP.PCAP.PP.CD': 'pib_pc_prec_inter',
         'NY.GNP.PCAP.CD': 'INB_percapita',
         'SH.H2O.BASW.ZS': 'acceso_agua_potable(%)',
-        'SH.STA.BASS.ZS': 'acceso_servicios_sanitarios(%)'
+        'SH.STA.BASS.ZS': 'acceso_servicios_sanitarios(%)',
+        'PV.EST' :'estabilidad_política'
     }
 
     for indicador in consultar_por:
@@ -79,33 +80,33 @@ def carga_twb():
 
 
 def paises() -> str:
-    # Define target URL.
+    # Define la URL objetivo.
     base_url = "https://population.un.org/dataportalapi/api/v1/locationsWithAggregates?pageNumber=1"
 
-    # Call the API and convert the resquest into JSON object.
+    # Llama a la API y convierte la respuesta en un objeto JSON
     response = requests.get(base_url).json()
 
-    # Convert JSON object to data frame.
+    # Convierte el objeto JSON en un DataFrame
     df = pd.json_normalize(response)
 
-    # Converts call into JSON and concat to the previous data frame.
+    # convierte la llamada en un objeto JSON y lo concatena a lo anterior
     for page in range(2, 4):
-        # Reset the target to the next page
+        # Reinicia el target a la siguiente página
         target = f"https://population.un.org/dataportalapi/api/v1/locationsWithAggregates?pageNumber={page}"
 
-        # Each iteration call the API and convert the resquest into JSON object.
+        # En cada iteración Llama a la API y convierte la respuesta en un objeto JSON
         response = requests.get(target).json()
 
-        # Each iteration convert JSON object to data frame.
+        # En cada iteración Convierte el objeto JSON en un DataFrame
         df_temp = pd.json_normalize(response)
 
-        # Each iteration concat the data frames.
+        # En cada iteración concatena los dataframes
         df = pd.concat([df, df_temp], ignore_index=True)
     
-    # Stores indicator codes in a list
+    # Guarda el cógido de los países en una lista
     id_code = [str(code) for code in df["Id"].values]
 
-    # Converts indicator code list into string to be used in later API call
+    # Convierte el la lista anterior en un string para ser usado luego
     id_code_string = ",".join(id_code)
     
     return id_code_string
@@ -113,21 +114,21 @@ def paises() -> str:
 
 def carga_incremental_unpd(indicator_code: int):
     base_url_UNPD = "https://population.un.org/dataportalapi/api/v1"
-    country = paises()  # set the country code
-    start_year = 1990  # set the start year
-    end_year = 2020  # set the end year
+    country = paises() 
+    start_year = 1990  
+    end_year = 2020 
 
-    # define the target URL
     target = (
         base_url_UNPD
         + f"/data/indicators/{indicator_code}/locations/{country}/start/{start_year}/end/{end_year}"
     )
 
-    response = requests.get(target)  # Call the API
-    j = response.json()  # Format response as JSON
-    df_UNPD = pd.json_normalize(j["data"])  # Read JSON data into dataframe
+    response = requests.get(target)  
+    j = response.json()  
+    df_UNPD = pd.json_normalize(j["data"]) 
 
-    # As long as the response contains information in the 'nextPage' field, the loop will continue to download and append data
+    # Mientras la respuesta contenga información en el campo 'nextPage',
+    # el loop continuará descargando datos y agregando a lo anterior
     while j["nextPage"] is not None:
         response = requests.get(j["nextPage"])
         j = response.json()
@@ -161,8 +162,8 @@ default_arg = {
 with DAG (
     default_args=default_arg,
     dag_id='pruebas_de_carga_v0.1.0',
-    start_date=datetime(2022, 10, 24),
-    schedule_interval='@daily'
+    start_date=datetime(2021, 10, 24),
+    schedule_interval='0 3 1 4 *'
 ) as dag:
     twb = PythonOperator(
         task_id='Carga_datos_banco_mundial',
