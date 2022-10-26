@@ -56,7 +56,7 @@ def carga_incremental_twb(pais = 'all', indicador=''):
             # Creo el DataFrame con todos los datos
             data = pd.json_normalize(datos)
             return data
-        return pd.DataFrame(['error'],columns=['no_data'])
+        return pd.DataFrame([['error']],columns=['no_data'])
 
 
 def carga_twb():

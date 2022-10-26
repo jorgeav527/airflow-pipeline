@@ -103,12 +103,12 @@ def lectura_y_transformacion():
         #unimos los dataframes en una sola tabla
         tabla = df_twb.join(df_unpd,on=['countryiso3code','date'])
     
-    return tabla
+    tabla.to_csv('data/df_unpd_&_twb.csv', index=False)
 
 
 def transformaciones_finales():
 
-    tabla = lectura_y_transformacion()
+    tabla = pd.read_csv('data/df_unpd_&_twb.csv')
 
     # Se etiqueta los países según su ingreso nacional por año
     tabla['nivel_ingreso'] = pd.cut(tabla['INB_percapita'],
@@ -122,13 +122,9 @@ def transformaciones_finales():
     # Se eliminan todos los nulos que existan sobre esperanza de vida
     tabla.dropna(subset=['esperanza_vida_total'], inplace=True)
 
-    return tabla
+    tabla.to_csv('data/df_unpd_&_twb.csv', index=False)
 
-def guardado_tabla_final():
 
-    tabla = transformaciones_finales()
-    tabla.to_csv('data/df_unpd_&_twb.csv')
-    
 default_arg = {
     'owner' : 'domingo',
     'retries' : 5,
@@ -137,14 +133,20 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_transformacion_v0.0.5',
+    dag_id='pruebas_de_transformacion_v0.1.0',
     start_date=datetime(2022, 10, 24),
     schedule_interval='@daily',
     catchup=True
 ) as dag:
-    transformacion = PythonOperator(
+    lectura = PythonOperator(
         task_id='Lectura_y_transformacion_de_datos',
-        python_callable=guardado_tabla_final
+        python_callable=lectura_y_transformacion
     )
 
-    transformacion
+    retoques = PythonOperator(
+        task_id='Agregación_nuevos_datos',
+        python_callable=transformaciones_finales
+    )
+    
+
+    lectura >> retoques
