@@ -6,3 +6,4 @@ plotly
 streamlit
 scikit-learn
 uvicorn
+pyarrow
