@@ -61,7 +61,7 @@ problemas = [
 
 def lectura_y_transformacion():
     
-    directorio = 'data/datos_brutos'
+    directorio = 'data/datos_brutos/'
     with os.scandir(directorio) as ficheros:
         # Tomamos unicamente la fecha y el iso3 para usarlo como indice
         df_twb=pd.read_parquet('data/datos_brutos/df_TWB_SP.DYN.LE00.IN.parquet')[['date','countryiso3code']]
@@ -163,7 +163,7 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_transformacion_v0.2.0',
+    dag_id='pruebas_de_transformacion_v0.2.1',
     start_date=datetime(2022, 10, 25),
     schedule_interval='@daily',
     catchup=True
