@@ -152,6 +152,8 @@ def transformaciones_finales():
     # Se eliminan todos los nulos que existan sobre esperanza de vida
     tabla.dropna(subset=['esperanza_vida_total'], inplace=True)
 
+    tabla.reset_index(inplace=True)
+
     tabla.to_parquet('data/datos_pre_procesados/df_unpd_&_twb.parquet')
 
 
@@ -163,7 +165,7 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_transformacion_v0.2.1',
+    dag_id='pruebas_de_transformacion_v0.2.2',
     start_date=datetime(2022, 10, 25),
     schedule_interval='@daily',
     catchup=True

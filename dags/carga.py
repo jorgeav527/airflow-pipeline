@@ -279,37 +279,52 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_carga_v0.0.1',
+    dag_id='pruebas_de_carga_v0.1.2',
     start_date=datetime(2022, 10, 25),
     schedule_interval='@daily',
     catchup=True
 ) as dag:
-    renombrar= PythonOperator(
-        task_id= 'renombrar_columas_tabla_paises',
+
+    renombrar = PythonOperator(
+        task_id= 'Renombrar_columas_tabla_paises',
         python_callable=renombrar_columnas_paises
     )
 
     columnas = PythonOperator(
-        task_id= 'crear_columnas_y_tablas_temporales',
+        task_id= 'Crear_columnas_y_tablas_temporales',
         python_callable=crear_columnas_indicadores
     )
 
     ingresos = PythonOperator(
-        task_id = 'crear_parquet_ingreso',
+        task_id = 'Crear_parquet_ingreso',
         python_callable=crear_ingresos
     )
 
     paises = PythonOperator(
-        task_id = 'crear_parquet_pais',
+        task_id = 'Crear_parquet_pais',
         python_callable=crear_paises
     )
 
-    nivel = PythonOperator(
-        task_id = 'crear_parquet_nivel',
+    niveles = PythonOperator(
+        task_id = 'Crear_parquet_nivel',
         python_callable=crear_niveles
     )
 
-    ingresos = PythonOperator(
-        task_id = 'crear_parquet_ingreso',
-        python_callable=crear_ingresos
+    indices = PythonOperator(
+        task_id = 'Crear_parquet_indice',
+        python_callable=crear_indices
     )
+
+    remover = BashOperator(
+        task_id='Eliminar_archivos_temporales',
+        bash_command='rm /opt/airflow/data/datos_pre_procesados/temp*.parquet'
+    )
+
+    carga = PythonOperator(
+        task_id='Carga_base_de_datos',
+        python_callable=cargar_base_de_datos
+    )
+
+    renombrar >> columnas
+    columnas >> [ingresos, paises, niveles, indices]
+    [ingresos, paises, niveles, indices] >> remover >> carga
