@@ -232,9 +232,9 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_carga_v0.1.1',
-    start_date=datetime(2021, 10, 24),
-    schedule_interval='0 3 1 4 *'
+    dag_id='pruebas_de_carga_v0.1.2',
+    start_date=datetime(2021, 10, 27),
+    schedule_interval='@daily'
 ) as dag:
     twb = PythonOperator(
         task_id='Carga_datos_banco_mundial',
