@@ -23,9 +23,11 @@ default_args = {
 }
 client = boto3.client("s3", **linode_obj_config)
 directory_datos_brutos = "data/datos_brutos/"
+directory_datos_pre_procesados = "data/datos_pre_procesados/"
+directory_datos_procesados = "data/datos_procesados/"
 
 
-def upload_file_to_bucket():
+def upload_file_to_bucket_datos_brutos():
     """
     Subimos todos los archivos en formato parquet
     """
@@ -35,40 +37,54 @@ def upload_file_to_bucket():
             Filename=f"{f}",
             Bucket="datos_brutos",
             Key=f"{filename}",
+            ExtraArgs={"ACL": "public-read"},
         )
 
 
-# # for my_bucket_object in s3.Bucket("my_bucket").objects.filter(Prefix="user/folder/"):
-# #     s3.Object(my_bucket_object.bucket_name, my_bucket_object.key).download_file(f'./aws/{my_bucket_object.key}'
+def upload_file_to_bucket_datos_pre_procesados():
+    """
+    Subimos todos los archivos en formato parquet
+    """
+    for filename in os.listdir(directory_datos_pre_procesados):
+        f = os.path.join(directory_datos_pre_procesados, filename)
+        client.upload_file(
+            Filename=f"{f}",
+            Bucket="datos_pre_procesados",
+            Key=f"{filename}",
+            ExtraArgs={"ACL": "public-read"},
+        )
 
 
-# def download_file_to_bucket():
-#     for filename in client.objects:
-#         # f = os.path.join(directory_datos_brutos, filename)
-#         # client.upload_file(
-#         #     Filename=f"{f}",
-#         #     Bucket="datos_brutos",
-#         #     Key=f"{filename}",
-#         # )
-#         # client.download_file(
-#         #     Bucket="datos_brutos",
-#         #     Key="df_OMS_M_Est_cig_curr.parquet",
-#         #     Filename="data/df_OMS_M_Est_cig_curr.parquet",
-#         # )
+def upload_file_to_bucket_datos_procesados():
+    """
+    Subimos todos los archivos en formato parquet
+    """
+    for filename in os.listdir(directory_datos_procesados):
+        f = os.path.join(directory_datos_procesados, filename)
+        client.upload_file(
+            Filename=f"{f}",
+            Bucket="datos_procesados",
+            Key=f"{filename}",
+            ExtraArgs={"ACL": "public-read"},
+        )
 
 
 with DAG(
-    dag_id="upload_to_bucket_v1",
-    start_date=datetime(2022, 10, 25),
-    schedule_interval="@daily",
+    dag_id="upload_to_bucket_v6",
+    start_date=datetime(2022, 10, 27),
+    schedule_interval="@once",
     default_args=default_args,
 ) as dag:
     task1 = PythonOperator(
-        task_id="upload_files",
-        python_callable=upload_file_to_bucket,
+        task_id="upload_file_to_bucket_datos_brutos",
+        python_callable=upload_file_to_bucket_datos_brutos,
     )
-    # task2 = PythonOperator(
-    #     task_id="download",
-    #     python_callable=download_file_to_bucket,
-    # )
-    task1
+    task2 = PythonOperator(
+        task_id="upload_file_to_bucket_datos_pre_procesados",
+        python_callable=upload_file_to_bucket_datos_pre_procesados,
+    )
+    task3 = PythonOperator(
+        task_id="upload_file_to_bucket_datos_procesados",
+        python_callable=upload_file_to_bucket_datos_procesados,
+    )
+    task1 >> task2 >> task3
