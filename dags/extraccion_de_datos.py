@@ -6,25 +6,25 @@ import pandas as pd
 import os
 
 naciones_unidas = {
-    '22': 'tasa_mortalidad_infantil',
-    '54': 'densidad_población_por_kilómetro_cuadrado)',
-    '65': 'migración_neta_total',
-    '49': 'población_total_por_sexo',
-    '60': 'total_muertes_por_sexo',
-    '53': 'tasa_bruta_cambio_natural_población',
-    '66': 'tasa_bruta_migración_neta',
-    '72': 'proporción_sexos_población_total',
-    '1': 'prevalencia_anticonceptivos_porcentaje',
-    '67': 'mediana_edad_población',
-    '59': 'tasa_bruta_mortalidad_por_1000_habitantes',
-    '51': 'tasa_bruta_variación_total_población',
-    '50': 'cambio_de_la_población',
-    '41': 'población_femenina_edad_reproductiva_(15-49 años)',
-    '24': 'tasa_mortalidad_menores_cinco_años',
-    '52': 'cambio_natural_población',
-    '19': 'tasa_fertilidad',
-    '42': 'estado_civil_casado_porcentaje'
-}
+    '22': ['mort', 'tasa_mortalidad_infantil'],
+    '54': ['pop', 'densidad_población_por_kilómetro_cuadrado)'],
+    '65': ['imigrt', 'migración_neta_total'],
+    '49': ['pop', 'población_total_por_sexo'],
+    '60': ['mort', 'total_muertes_por_sexo'],
+    '53': ['pop', 'tasa_bruta_cambio_natural_población'],
+    '66': ['imigrt', 'tasa_bruta_migración_neta'],
+    '72': ['pop', 'proporción_sexos_población_total'],
+    '1': ['fam', 'prevalencia_anticonceptivos_porcentaje'],
+    '67': ['pop', 'mediana_edad_población'],
+    '59': ['mort', 'tasa_bruta_mortalidad_por_1000_habitantes'],
+    '51': ['pop', 'tasa_bruta_variación_total_población'],
+    '50': ['pop', 'cambio_de_la_población'],
+    '41': ['pop', 'población_femenina_edad_reproductiva_(15-49 años)'],
+    '24': ['mort', 'tasa_mortalidad_menores_cinco_años'],
+    '52': ['pop', 'cambio_natural_población'],
+    '19': ['fert', 'tasa_fertilidad'],
+    '42': ['marstat', 'estado_civil_casado_porcentaje']
+ }
 
 banco_mundial = {
     'SP.DYN.LE00.IN': 'esperanza_vida_total',
@@ -220,10 +220,10 @@ def carga_unpd():
     for indicador in naciones_unidas:
         datos = carga_incremental_unpd(indicador)
         datos.to_parquet(
-            f'data/datos_brutos/df_UNPD_{indicador}.parquet',
+            f'data/datos_brutos/df_UNPD_{naciones_unidas[indicador][0]}_{indicador}.parquet',
             index=False
         )
-        print(f'Datos sobre {naciones_unidas[indicador]} guardados')
+        print(f'Datos sobre {naciones_unidas[indicador][1]} guardados')
 
 def creacion_directorios():
     os.makedirs('data/datos_pre_procesados', exist_ok=True)
@@ -239,7 +239,7 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='Carga_de_datos_v0.2.0',
+    dag_id='Carga_de_datos_v0.2.1',
     start_date=datetime(2022, 10, 31),
     schedule_interval='@daily'
 ) as dag:
