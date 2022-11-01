@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from airflow.operators.python import PythonOperator
 import requests
 import pandas as pd
+import os
 
 naciones_unidas = {
     '22': 'tasa_mortalidad_infantil',
@@ -224,6 +225,12 @@ def carga_unpd():
         )
         print(f'Datos sobre {naciones_unidas[indicador]} guardados')
 
+def creacion_directorios():
+    os.makedirs('data/datos_pre_procesados', exist_ok=True)
+    os.makedirs('data/datos_procesados', exist_ok=True)
+    os.makedirs('data/datos_brutos', exist_ok=True)
+
+
 default_arg = {
     'owner' : 'domingo',
     'retries' : 3,
@@ -232,8 +239,8 @@ default_arg = {
 
 with DAG (
     default_args=default_arg,
-    dag_id='pruebas_de_carga_v0.1.3',
-    start_date=datetime(2022, 10, 27),
+    dag_id='Carga_de_datos_v0.2.0',
+    start_date=datetime(2022, 10, 31),
     schedule_interval='@daily'
 ) as dag:
     twb = PythonOperator(
@@ -251,4 +258,9 @@ with DAG (
         python_callable=tabla_paises
     )
 
-    paises >> [twb, unpd]
+    directorios= PythonOperator(
+        task_id='Creación_de_directorios',
+        python_callable=creacion_directorios
+    )
+
+    directorios >> paises >> twb >> unpd
